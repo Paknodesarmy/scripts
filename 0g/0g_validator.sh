@@ -1,22 +1,12 @@
 #!/bin/bash
 
-# Function to center text based on terminal width
-center_text() {
-    local text="$1"
-    local width=$(tput cols)
-    local padding=$(( ($width - ${#text}) / 2 ))
-    printf "%${padding}s%s%${padding}s\n" " " "$text" " "
-}
-
-# Print PakNodesArmy ASCII art centered in the terminal
-center_text " ___          _      _   _             _               _____                         "
-center_text "(  _`\       ( )    ( ) ( )           ( )             (  _  )                        "
-center_text "| |_) )  _ _ | |/') | `\| |   _      _| |   __    ___ | (_) | _ __   ___ ___   _   _ "
-center_text "| ,__/'/'_` )| , <  | , ` | /'_`\  /'_` | /'__`\/',__)|  _  |( '__)/' _ ` _ `\( ) ( )"
-center_text "| |   ( (_| || |\`\ | |`\ |( (_) )( (_| |(  ___/\__, \| | | || |   | ( ) ( ) || (_) |"
-center_text "(_)   `\__,_)(_) (_)(_) (_)`\___/'`\__,_)`\____)(____/(_) (_)(_)   (_) (_) (_)`\__, |"
-center_text "                                                                            ( )_| |"
-center_text "                                                                            `\___/' "
+# ASCII art
+echo "   ___      _        __          _              _                        "
+echo "  / _ \__ _| | __ /\ \ \___   __| | ___  ___   /_\  _ __ _ __ ___  _   _ "
+echo " / /_)/ _  | |/ //  \/ / _ \ / _  |/ _ \/ __| //_\\| '__| '_  _ \| | | |"
+echo "/ ___/ (_| |   </ /\  / (_) | (_| |  __/\__ \/  _  \ |  | | | | | | |_| |"
+echo "\/    \__,_|_|\_\_\/_/ \___/ \__,_|\___||___/\_/ \_/_|  |_| |_| |_|\__, |"
+echo "                                                                   |___/ "
 
 # Wait for 2 seconds
 sleep 2
