@@ -77,7 +77,6 @@ sed -i "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"0ua0gi\"/" $HOME/.0gch
 
 # create service
 
-echo -e "\e[1m\e[32m8. Creating systemd service... \e[0m" && sleep 1
 sudo tee /etc/systemd/system/0gd.service > /dev/null <<EOF
 [Unit]
 Description=0G Node
@@ -85,19 +84,22 @@ After=network.target
 
 [Service]
 User=$USER
-ExecStart=/usr/local/bin/0gchaind start --home $HOME/.0gchain
+Type=simple
+ExecStart=$(which 0gchaind) start --home $HOME/.0gchain
 Restart=on-failure
 LimitNOFILE=65535
 
 [Install]
 WantedBy=multi-user.target
 EOF
+
 # start service
 
 sudo systemctl daemon-reload && \
 sudo systemctl enable 0gd && \
 sudo systemctl restart 0gd && \
 sudo journalctl -u 0gd -f -o cat
+
 
 # Print setup finished message
 echo '=============== SETUP FINISHED ==================='
