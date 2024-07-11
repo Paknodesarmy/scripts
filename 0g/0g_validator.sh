@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# Function to center text based on terminal width
-center_text() {
-    local text="$1"
-    local width=$(tput cols)
-    local padding=$(( ($width - ${#text}) / 2 ))
-    printf "%${padding}s%s%${padding}s\n" " " "$text" " "
-}
-
-# Print PakNodesArmy ASCII art centered in the terminal
 center_text " ___          _      _   _             _               _____                         "
 center_text "(  _`\       ( )    ( ) ( )           ( )             (  _  )                        "
 center_text "| |_) )  _ _ | |/') | `\| |   _      _| |   __    ___ | (_) | _ __   ___ ___   _   _ "
