@@ -34,7 +34,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 # Set environment variables
 echo -e "\e[1m\e[32m4. Setting environment variables... \e[0m" && sleep 1
-read -p "Enter json-rpc: " BLOCKCHAIN_RPC_ENDPOINT
+read -p "Enter json-rpc (default: http://77.76.13.186:8545): " BLOCKCHAIN_RPC_ENDPOINT
+BLOCKCHAIN_RPC_ENDPOINT=${BLOCKCHAIN_RPC_ENDPOINT:-"http://77.76.13.186:8545"}
 echo "Current json-rpc: $BLOCKCHAIN_RPC_ENDPOINT"
 
 ENR_ADDRESS=$(wget -qO- eth0.me)
