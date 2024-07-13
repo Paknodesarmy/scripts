@@ -12,8 +12,7 @@ sleep 2
 
 # Install dependencies for building from source
 echo -e "\e[1m\e[32m1. Updating packages... \e[0m" && sleep 1
-sudo apt-get update
-sudo apt-get install -y clang cmake build-essential curl
+sudo apt-get update && sudo apt-get upgrade -y
 
 # Install Go
 echo -e "\e[1m\e[32m2. Installing Go... \e[0m" && sleep 1
@@ -34,7 +33,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 # Set environment variables
 echo -e "\e[1m\e[32m4. Setting environment variables... \e[0m" && sleep 1
-read -p "Enter json-rpc (default: https://jsonrpc.0g-test.paknodesarmy.xyz): " BLOCKCHAIN_RPC_ENDPOINT
+read -p "Enter json-rpc (default https://jsonrpc.0g-test.paknodesarmy.xyz): " BLOCKCHAIN_RPC_ENDPOINT
 BLOCKCHAIN_RPC_ENDPOINT=${BLOCKCHAIN_RPC_ENDPOINT:-"https://jsonrpc.0g-test.paknodesarmy.xyz"}
 echo "Current json-rpc: $BLOCKCHAIN_RPC_ENDPOINT"
 
@@ -53,6 +52,12 @@ echo -e "\n\033[31mCHECK YOUR STORAGE NODE VARIABLES\033[0m\n\nLOG_CONTRACT_ADDR
 # Prompt for Ethereum wallet private key
 echo -e "\e[1m\e[32m5. Enter your Ethereum wallet private key: \e[0m" && sleep 1
 read -sp "Private key: " PRIVATE_KEY && echo
+
+# Validate private key input
+if [[ -z "$PRIVATE_KEY" ]]; then
+    echo -e "\n\033[31mERROR: Ethereum wallet private key is required!\033[0m"
+    exit 1
+fi
 
 # Display loading message
 echo -e "Please wait \e[1m\e[33m⠋\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠙\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠹\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠸\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠼\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠴\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠦\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠧\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠇\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠏\e[0m"
