@@ -12,8 +12,8 @@ sleep 2
 
 # Install dependencies for building from source
 echo -e "\e[1m\e[32m1. Updating packages... \e[0m" && sleep 1
-sudo apt-get update && sudo apt-get upgrade -y
-sudo apt-get install -y clang cmake build-essential jq
+sudo apt-get update
+sudo apt-get install -y clang cmake build-essential curl
 
 # Install Go
 echo -e "\e[1m\e[32m2. Installing Go... \e[0m" && sleep 1
