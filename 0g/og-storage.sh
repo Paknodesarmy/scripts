@@ -47,11 +47,21 @@ echo "export BLOCKCHAIN_RPC_ENDPOINT=\"$BLOCKCHAIN_RPC_ENDPOINT\"" >> ~/.bash_pr
 
 source ~/.bash_profile
 
-echo -e "\n\033[31mCHECK YOUR STORAGE NODE VARIABLES\033[0m\n\nLOG_CONTRACT_ADDRESS: $LOG_CONTRACT_ADDRESS\nMINE_CONTRACT: $MINE_CONTRACT\nZGS_LOG_SYNC_BLOCK: $ZGS_LOG_SYNC_BLOCK\nBLOCKCHAIN_RPC_ENDPOINT: $BLOCKCHAIN_RPC_ENDPOINT\n\n\033[3m\"lets buidl together\" - Grand Valley\033[0m"
+echo -e "\n\033[31mCHECK YOUR STORAGE NODE VARIABLES\033[0m\n\nLOG_CONTRACT_ADDRESS: $LOG_CONTRACT_ADDRESS\nMINE_CONTRACT: $MINE_CONTRACT\nZGS_LOG_SYNC_BLOCK: $ZGS_LOG_SYNC_BLOCK\nBLOCKCHAIN_RPC_ENDPOINT: $BLOCKCHAIN_RPC_ENDPOINT\n\n"
+
+# Prompt for Ethereum wallet private key
+echo -e "\e[1m\e[32m5. Enter your Ethereum wallet private key: \e[0m" && sleep 1
+read -sp "Private key: " PRIVATE_KEY && echo
+
+# Display loading message
+echo -e "Please wait \e[1m\e[33m⠋\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠙\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠹\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠸\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠼\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠴\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠦\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠧\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠇\e[0m" && sleep 1 && echo -e "Please wait \e[1m\e[33m⠏\e[0m"
+
+# Check RPC connection
+echo -e "\e[1m\e[32m6. Checking RPC connection... \e[0m" && sleep 1
 curl -s -X POST $BLOCKCHAIN_RPC_ENDPOINT -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' | jq -r '.result' | xargs printf "%d\n"
 
 # Download binary
-echo -e "\e[1m\e[32m5. Downloading and building binaries... \e[0m" && sleep 1
+echo -e "\e[1m\e[32m7. Downloading and building binaries... \e[0m" && sleep 1
 cd $HOME
 git clone https://github.com/0glabs/0g-storage-node.git
 cd $HOME/0g-storage-node
@@ -63,12 +73,8 @@ git submodule update --init
 sudo apt install -y cargo
 cargo build --release
 
-# Obtain wallet private key
-echo -e "\e[1m\e[32m6. Obtaining wallet private key... \e[0m" && sleep 1
-read -sp "Enter your private key: " PRIVATE_KEY && echo
-
 # Update node configuration
-echo -e "\e[1m\e[32m7. Updating node configuration... \e[0m" && sleep 1
+echo -e "\e[1m\e[32m8. Updating node configuration... \e[0m" && sleep 1
 sed -i "
 s|^miner_key = \"\"|miner_key = \"$PRIVATE_KEY\"|
 s|^\s*#\?\s*network_dir\s*=.*|network_dir = \"network\"|
@@ -90,8 +96,8 @@ s|^\s*#\?\s*log_sync_start_block_number\s*=.*|log_sync_start_block_number = $ZGS
 s|^\s*#\?\s*blockchain_rpc_endpoint\s*=.*|blockchain_rpc_endpoint = \"$BLOCKCHAIN_RPC_ENDPOINT\"|
 " $HOME/0g-storage-node/run/config.toml
 
-# Create service
-echo -e "\e[1m\e[32m8. Creating systemd service... \e[0m" && sleep 1
+# Create systemd service
+echo -e "\e[1m\e[32m9. Creating systemd service... \e[0m" && sleep 1
 sudo tee /etc/systemd/system/zgs.service > /dev/null <<EOF
 [Unit]
 Description=ZGS Node
@@ -110,20 +116,14 @@ WantedBy=multi-user.target
 EOF
 
 # Start the node
-echo -e "\e[1m\e[32m9. Starting the node... \e[0m" && sleep 1
+echo -e "\e[1m\e[32m10. Starting the node... \e[0m" && sleep 1
 sudo systemctl daemon-reload
 sudo systemctl enable zgs
 sudo systemctl start zgs
 sudo systemctl status zgs
 
-# Show logs by date
-echo -e "\e[1m\e[32m10. Showing logs by date... \e[0m" && sleep 1
-ls -lt $ZGS_LOG_DIR
-
-# Full logs command
-echo -e "\e[1m\e[32mFull logs command: \e[0m" && sleep 1
-echo "tail -f ~/0g-storage-node/run/log/zgs.log.\$(TZ=UTC date +%Y-%m-%d)"
-
-# tx_seq-only logs command
-echo -e "\e[1m\e[32mTransaction sequence-only logs command: \e[0m" && sleep 1
-echo "tail -f ~/0g-storage-node/run/log/zgs.log.\$(TZ=UTC date +%Y-%m-%d) | grep tx_seq:"
+# Instructions for logs
+echo -e "\e[1m\e[32m11. Show logs by date... \e[0m"
+echo "Check the logs file: ls -lt $ZGS_LOG_DIR"
+echo "Full logs command: tail -f ~/0g-storage-node/run/log/zgs.log.\$(TZ=UTC date +%Y-%m-%d)"
+echo "tx_seq-only logs command: tail -f ~/0g-storage-node/run/log/zgs.log.\$(TZ=UTC date +%Y-%m-%d) | grep tx_seq:"
