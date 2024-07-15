@@ -55,6 +55,11 @@ source ~/.bash_profile
 echo -e "\e[1m\e[32m6. Storing miner key... \e[0m" && sleep 1
 read -p "Enter your private key for miner_key configuration: " PRIVATE_KEY && echo
 
+# Enter RPC Endpoint
+echo -e "\e[1m\e[32m6.5. Entering RPC endpoint... \e[0m" && sleep 1
+read -p "Enter the RPC endpoint (default: https://jsonrpc.0g-test.paknodesarmy.xyz): " RPC_ENDPOINT
+RPC_ENDPOINT=${RPC_ENDPOINT:-https://jsonrpc.0g-test.paknodesarmy.xyz}
+
 # Create Network & DB Directory
 echo -e "\e[1m\e[32m7. Creating network & DB directory... \e[0m" && sleep 1
 mkdir -p "$HOME/0g-storage-node/network" "$HOME/0g-storage-node/db"
@@ -69,7 +74,7 @@ sed -i 's|^\s*#\?\s*network_enr_udp_port\s*=.*|network_enr_udp_port = 1234|' "$C
 sed -i 's|^\s*#\?\s*network_libp2p_port\s*=.*|network_libp2p_port = 1234|' "$CONFIG_FILE"
 sed -i 's|^\s*#\?\s*network_discovery_port\s*=.*|network_discovery_port = 1234|' "$CONFIG_FILE"
 sed -i 's|^\s*#\?\s*network_target_peers\s*=.*|network_target_peers = 50|' "$CONFIG_FILE"
-sed -i 's|^\s*#\?\s*blockchain_rpc_endpoint\s*=.*|blockchain_rpc_endpoint = "https://og-testnet-jsonrpc.blockhub.id"|' "$CONFIG_FILE"
+sed -i "s|^\s*#\?\s*blockchain_rpc_endpoint\s*=.*|blockchain_rpc_endpoint = \"$RPC_ENDPOINT\"|" "$CONFIG_FILE"
 sed -i 's|^\s*#\?\s*log_contract_address\s*=.*|log_contract_address = "0x8873cc79c5b3b5666535C825205C9a128B1D75F1"|' "$CONFIG_FILE"
 sed -i 's|^\s*#\?\s*log_sync_start_block_number\s*=.*|log_sync_start_block_number = 802|' "$CONFIG_FILE"
 sed -i 's|^\s*#\?\s*rpc_enabled\s*=\s*true|rpc_enabled = true|' "$CONFIG_FILE"
