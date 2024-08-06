@@ -12,7 +12,7 @@ bash_profile=$HOME/.bash_profile
 if [ -f "$bash_profile" ]; then
     . $HOME/.bash_profile
 fi
-sleep 1 && curl -s https://github.com/Paknodesarmy/logo/blob/main/banner.sh | bash && sleep 2
+sleep 1 && curl -s https://raw.githubusercontent.com/Paknodesarmy/logo/main/banner.sh | bash && sleep 2
 
 NODE="0g"
 export DAEMON_HOME=$HOME/.0gchain
