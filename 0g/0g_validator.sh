@@ -1,109 +1,172 @@
 #!/bin/bash
+exists()
+{
+  command -v "$1" >/dev/null 2>&1
+}
+if exists curl; then
+echo ''
+else
+  sudo apt update && sudo apt install curl -y < "/dev/null"
+fi
+bash_profile=$HOME/.bash_profile
+if [ -f "$bash_profile" ]; then
+    . $HOME/.bash_profile
+fi
+sleep 1 && curl -s https://github.com/Paknodesarmy/logo/blob/main/banner.sh | bash && sleep 2
 
+NODE="0g"
+export DAEMON_HOME=$HOME/.0gchain
+export DAEMON_NAME=0gchaind
+if [ -d "$DAEMON_HOME" ]; then
+    new_folder_name="${DAEMON_HOME}_$(date +"%Y%m%d_%H%M%S")"
+    mv "$DAEMON_HOME" "$new_folder_name"
+fi
+CHAIN_ID=zgtendermint_16600-2
+#echo 'export CHAIN_ID='\"${CHAIN_ID}\" >> $HOME/.bash_profile
 
-echo "   ___      _        __          _              _                        "
-echo "  / _ \__ _| | __ /\ \ \___   __| | ___  ___   /_\  _ __ _ __ ___  _   _ "
-echo " / /_)/ _  | |/ //  \/ / _ \ / _  |/ _ \/ __| //_\\| '__| '_  _ \| | | |"
-echo "/ ___/ (_| |   </ /\  / (_) | (_| |  __/\__ \/  _  \ |  | | | | | | |_| |"
-echo "\/    \__,_|_|\_\_\/_/ \___/ \__,_|\___||___/\_/ \_/_|  |_| |_| |_|\__, |"
-echo "                                                                   |___/ "
-
-# Wait for 2 seconds
-sleep 2
-
-# set vars
-read -p "Enter node name: " MONIKER
-echo 'export MONIKER="'$MONIKER'"' >> $HOME/.bash_profile
-echo 'export CHAIN_ID="zgtendermint_16600-2"' >> ~/.bash_profile
-echo 'export WALLET_NAME="wallet"' >> ~/.bash_profile
-echo 'export RPC_PORT="26657"' >> ~/.bash_profile
+if [ ! $VALIDATOR ]; then
+    read -p "Enter validator name: " VALIDATOR
+    echo 'export VALIDATOR='\"${VALIDATOR}\" >> $HOME/.bash_profile
+fi
+echo 'source $HOME/.bashrc' >> $HOME/.bash_profile
 source $HOME/.bash_profile
-echo '================================================='
-echo -e "Your node name: \e[1m\e[32m$MONIKER\e[0m"
-echo '================================================='
-sleep 2
-
-echo -e "\e[1m\e[32m1. Updating packages... \e[0m" && sleep 1
-# update
-sudo apt update && sudo apt upgrade -y
-
-echo -e "\e[1m\e[32m2. Installing dependencies... \e[0m" && sleep 1
-# packages
-sudo apt install curl tar wget clang pkg-config protobuf-compiler libssl-dev jq build-essential protobuf-compiler bsdmainutils git make ncdu gcc git jq chrony liblz4-tool -y snapd
-# install go
-cd $HOME && \
-ver="1.22.0" && \
-wget "https://golang.org/dl/go$ver.linux-amd64.tar.gz" && \
-sudo rm -rf /usr/local/go && \
-sudo tar -C /usr/local -xzf "go$ver.linux-amd64.tar.gz" && \
-rm "go$ver.linux-amd64.tar.gz" && \
-echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> $HOME/.bash_profile && \
-source $HOME/.bash_profile && \
-go version
 sleep 1
-
-echo -e "\e[1m\e[32m3. Downloading and building binaries... \e[0m" && sleep 1
-
-# download binary
-
-git clone -b v0.2.3 https://github.com/0glabs/0g-chain.git
-cd 0g-chain
-make install
-0gchaind version
-
-# init node
-
 cd $HOME
-0gchaind init $MONIKER --chain-id $CHAIN_ID
-0gchaind config chain-id $CHAIN_ID
-0gchaind config node tcp://localhost:$RPC_PORT
-0gchaind config keyring-backend os # You can set it to "test" so you will not be asked for a password
+sudo apt update
+sudo apt install make unzip clang pkg-config lz4 libssl-dev build-essential git jq ncdu bsdmainutils htop -y < "/dev/null"
 
-# download genesis
+echo -e '\n\e[42mInstall Go\e[0m\n' && sleep 1
+cd $HOME
+VERSION=1.20.14
+wget -O go.tar.gz https://go.dev/dl/go$VERSION.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go.tar.gz && rm go.tar.gz
+echo 'export GOROOT=/usr/local/go' >> $HOME/.bash_profile
+echo 'export GOPATH=$HOME/go' >> $HOME/.bash_profile
+echo 'export GO111MODULE=on' >> $HOME/.bash_profile
+echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >> $HOME/.bash_profile && . $HOME/.bash_profile
+go version
 
-rm $HOME/.0gchain/config/genesis.json
-wget https://github.com/0glabs/0g-chain/releases/download/v0.2.3/genesis.json -O $HOME/.0gchain/config/genesis.json
+echo -e '\n\e[42mInstall software\e[0m\n' && sleep 1
 
-# add seed and peer
+sleep 1
+cd $HOME
+rm -rf 0g-chain
+git clone -b v0.2.3 https://github.com/0glabs/0g-chain.git
+./0g-chain/networks/testnet/install.sh
+source ~/.profile
+
+SEEDS="81987895a11f6689ada254c6b57932ab7ed909b6@54.241.167.190:26656,010fb4de28667725a4fef26cdc7f9452cc34b16d@54.176.175.48:26656,e9b4bc203197b62cc7e6a80a64742e752f4210d5@54.193.250.204:26656,68b9145889e7576b652ca68d985826abd46ad660@18.166.164.232:26656"
+$DAEMON_NAME init "${VALIDATOR}" --chain-id $CHAIN_ID 
+sleep 1
+$DAEMON_NAME config keyring-backend test
+$DAEMON_NAME config chain-id $CHAIN_ID
+wget -O $DAEMON_HOME/config/genesis.json https://github.com/0glabs/0g-chain/releases/download/v0.2.3/genesis.json
+sed -i.bak -e "s/^seeds *=.*/seeds = \"${SEEDS}\"/" $DAEMON_HOME/config/config.toml
+#sed -i "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"0.00252aevmos\"/" $DAEMON_HOME/config/app.toml
 
 
-SEEDS="81987895a11f6689ada254c6b57932ab7ed909b6@54.241.167.190:26656,010fb4de28667725a4fef26cdc7f9452cc34b16d@54.176.175.48:26656,e9b4bc203197b62cc7e6a80a64742e752f4210d5@54.193.250.204:26656,68b9145889e7576b652ca68d985826abd46ad660@18.166.164.232:26656" && \
-sed -i.bak -e "s/^seeds *=.*/seeds = \"${SEEDS}\"/" $HOME/.0gchain/config/config.toml
-PEERS="6dbb0450703d156d75db57dd3e51dc260a699221@152.53.47.155:13456,1bf93ac820773970cf4f46a479ab8b8206de5f60@62.171.185.81:12656,df4cc52fa0fcdd5db541a28e4b5a9c6ce1076ade@37.60.246.110:13456,66d59739b6b4ff0658e63832a5bbeb29e5259742@144.76.79.209:26656,76cc5b9beaff9f33dc2a235e80fe2d47448463a7@95.216.114.170:26656,adc616f440155f4e5c2bf748e9ac3c9e24bf78ac@51.161.13.62:26656,cd662c11f7b4879b3861a419a06041c782f1a32d@89.116.24.249:26656,40cf5c7c11931a4fdab2b721155cc236dfe7a809@84.46.255.133:12656,11945ced69c3448adeeba49355703984fcbc3a1a@37.27.130.146:26656,c02bf872d61f5dd04e877105ded1bd03243516fb@65.109.25.252:12656,d5e294d6d5439f5bd63d1422423d7798492e70fd@77.237.232.146:26656,386c82b09e0ec6a68e653a5d6c57f766ae73e0df@194.163.183.208:26656,4eac33906b2ba13ab37d0e2fe8fc5801e75f25a0@154.38.168.168:13456,c96b65a5b02081e3111b8b38cd7f5df76c7f9404@185.182.185.160:26656,48e3cab55ba7a1bc8ea940586e4718a857de84c4@178.63.4.186:26656"
-sed -i "s/^persistent_peers *=.*/persistent_peers = \"$PEERS\"/" $HOME/.0gchain/config/config.toml
-# set min gas price
-
-sed -i "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"0ua0gi\"/" $HOME/.0gchain/config/app.toml
-
-# create service
-
-sudo tee /etc/systemd/system/0gd.service > /dev/null <<EOF
-[Unit]
-Description=0G Node
+echo "[Unit]
+Description=$NODE Node
 After=network.target
 
 [Service]
 User=$USER
 Type=simple
-ExecStart=$(which 0gchaind) start --home $HOME/.0gchain
+ExecStart=$(which 0gchaind) start
 Restart=on-failure
 LimitNOFILE=65535
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target" > $HOME/$NODE.service
+sudo mv $HOME/$NODE.service /etc/systemd/system
+sudo tee <<EOF >/dev/null /etc/systemd/journald.conf
+Storage=persistent
 EOF
 
-# start service
+#echo -e '\n\e[42mDownloading a snapshot\e[0m\n' && sleep 1
+#curl https://snapshots.nodes.guru/og/latest_snapshot.tar.lz4 | lz4 -dc - | tar -xf - -C $DAEMON_HOME
+wget -O $DAEMON_HOME/config/addrbook.json https://snapshots.nodes.guru/og/addrbook.json
 
-sudo systemctl daemon-reload && \
-sudo systemctl enable 0gd && \
-sudo systemctl restart 0gd && \
-sudo journalctl -u 0gd -f -o cat
+echo -e '\n\e[42mChecking a ports\e[0m\n' && sleep 1
+#CHECK PORTS
+PORT=335
+if ss -tulpen | awk '{print $5}' | grep -q ":26656$" ; then
+    echo -e "\e[31mPort 26656 already in use.\e[39m"
+    sleep 2
+    sed -i -e "s|:26656\"|:${PORT}56\"|g" $DAEMON_HOME/config/config.toml
+    echo -e "\n\e[42mPort 26656 changed to ${PORT}56.\e[0m\n"
+    sleep 2
+fi
+if ss -tulpen | awk '{print $5}' | grep -q ":26657$" ; then
+    echo -e "\e[31mPort 26657 already in use\e[39m"
+    sleep 2
+    sed -i -e "s|:26657\"|:${PORT}57\"|" $DAEMON_HOME/config/config.toml
+    echo -e "\n\e[42mPort 26657 changed to ${PORT}57.\e[0m\n"
+    sleep 2
+    $DAEMON_NAME config node tcp://localhost:${PORT}57
+fi
+if ss -tulpen | awk '{print $5}' | grep -q ":26658$" ; then
+    echo -e "\e[31mPort 26658 already in use.\e[39m"
+    sleep 2
+    sed -i -e "s|:26658\"|:${PORT}58\"|" $DAEMON_HOME/config/config.toml
+    echo -e "\n\e[42mPort 26658 changed to ${PORT}58.\e[0m\n"
+    sleep 2
+fi
+if ss -tulpen | awk '{print $5}' | grep -q ":6060$" ; then
+    echo -e "\e[31mPort 6060 already in use.\e[39m"
+    sleep 2
+    sed -i -e "s|:6060\"|:${PORT}60\"|" $DAEMON_HOME/config/config.toml
+    echo -e "\n\e[42mPort 6060 changed to ${PORT}60.\e[0m\n"
+    sleep 2
+fi
+if ss -tulpen | awk '{print $5}' | grep -q ":1317$" ; then
+    echo -e "\e[31mPort 1317 already in use.\e[39m"
+    sleep 2
+    sed -i -e "s|:1317\"|:${PORT}17\"|" $DAEMON_HOME/config/app.toml
+    echo -e "\n\e[42mPort 1317 changed to ${PORT}17.\e[0m\n"
+    sleep 2
+fi
+if ss -tulpen | awk '{print $5}' | grep -q ":9090$" ; then
+    echo -e "\e[31mPort 9090 already in use.\e[39m"
+    sleep 2
+    sed -i -e "s|:9090\"|:${PORT}90\"|" $DAEMON_HOME/config/app.toml
+    echo -e "\n\e[42mPort 9090 changed to ${PORT}90.\e[0m\n"
+    sleep 2
+fi
+if ss -tulpen | awk '{print $5}' | grep -q ":9091$" ; then
+    echo -e "\e[31mPort 9091 already in use.\e[39m"
+    sleep 2
+    sed -i -e "s|:9091\"|:${PORT}91\"|" $DAEMON_HOME/config/app.toml
+    echo -e "\n\e[42mPort 9091 changed to ${PORT}91.\e[0m\n"
+    sleep 2
+fi
+if ss -tulpen | awk '{print $5}' | grep -q ":8545$" ; then
+    echo -e "\e[31mPort 8545 already in use.\e[39m"
+    sleep 2
+    sed -i -e "s|:8545\"|:${PORT}45\"|" $DAEMON_HOME/config/app.toml
+    echo -e "\n\e[42mPort 8545 changed to ${PORT}45.\e[0m\n"
+    sleep 2
+fi
+if ss -tulpen | awk '{print $5}' | grep -q ":8546$" ; then
+    echo -e "\e[31mPort 8546 already in use.\e[39m"
+    sleep 2
+    sed -i -e "s|:8546\"|:${PORT}46\"|" $DAEMON_HOME/config/app.toml
+    echo -e "\n\e[42mPort 8546 changed to ${PORT}46.\e[0m\n"
+    sleep 2
+fi
+
+#echo -e '\n\e[42mRunning a service\e[0m\n' && sleep 1
+sudo systemctl restart systemd-journald
+sudo systemctl daemon-reload
+sudo systemctl enable $NODE
+sudo systemctl restart $NODE
 
 
-# Print setup finished message
-echo '=============== SETUP FINISHED ==================='
-echo -e 'View the logs from the running service:: sudo journalctl -u 0gd -f -o cat'
-echo -e "Check the node is running: sudo systemctl status 0gd.service"
-echo -e "Stop your 0gchain node: sudo systemctl stop 0gd.service"
-echo -e "Start your 0gchain node: sudo systemctl start 0gd.service"
+echo -e '\n\e[42mCheck node status\e[0m\n' && sleep 1
+if [[ `service $NODE status | grep active` =~ "running" ]]; then
+  echo -e "Your $NODE node \e[32minstalled and works\e[39m!"
+  echo -e "You can check node status by the command \e[7mservice 0g status\e[0m"
+  echo -e "Press \e[7mQ\e[0m for exit from status menu"
+else
+  echo -e "Your $NODE node \e[31mwas not installed correctly\e[39m, please reinstall."
+fi
